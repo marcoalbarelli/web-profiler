@@ -1,0 +1,58 @@
+{
+  "checks": {},
+  "defaults": {
+    "schema": "http",
+    "username": "pippo",
+    "password": "password",
+    "server": "www.comune.levico-terme.tn.it"
+  },
+  "scenarios": [
+    {
+      "name": "",
+      "schema": "https",
+      "server": "google.it",
+      "url": "/",
+      "method": "GET"
+    },
+    {
+      "name": "",
+      "schema": "http",
+      "server": "localhost",
+      "url": "/",
+      "method": "GET"
+    },
+    {
+      "name": "",
+      "schema": "http",
+      "server": "localhost",
+      "url": "/comune-di-treville/",
+      "method": "GET"
+    },
+    {
+      "name": "",
+      "schema": "http",
+      "server": "localhost",
+      "url": "/comune-di-treville/",
+      "method": "GET"
+    },
+    {
+      "name": "",
+      "schema": "http",
+      "url": "/",
+      "query": {"a": "b"},
+      "method": "GET"
+    },
+    {
+      "url": "/In-Comune",
+      "method": "GET"
+    },
+    {
+      "url": "/Aree-tematiche",
+      "method": "GET"
+    },
+    {
+      "url": "/var/levico/storage/images/10032-368-ita-IT/Comune-di-Levico-Terme_header_logo.png",
+      "method": "GET"
+    }
+  ]
+}

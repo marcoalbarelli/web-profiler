@@ -32,23 +32,45 @@
       "name": "",
       "schema": "http",
       "server": "localhost",
-      "url": "/comune-di-treville/",
-      "method": "GET"
+      "url": "/",
+      "method": "POST",
+      "form": {
+        "a": 1,
+        "b" : "c"
+      }
     },
     {
       "name": "",
       "schema": "http",
       "url": "/",
       "query": {"a": "b"},
-      "method": "GET"
+      "method": "GET",
+      "expectations": [
+        {"type": "regex", "value": "Legambiente"}
+      ]
     },
     {
-      "url": "/In-Comune",
-      "method": "GET"
+      "server": "www.opencontent.it",
+      "schema": "https",
+      "url": "/extension/opencontent/design/opencontent/images/favicons/favicon.ico",
+      "method": "GET",
+      "expectations": [
+        {"type": "favicon", "filename": "default_favicon.ico", "value": true}
+      ]
+    },
+    {
+      "url": "/favicon.ico",
+      "method": "GET",
+      "expectations": [
+        {"type": "favicon", "filename": "default_favicon.ico", "value": false}
+      ]
     },
     {
       "url": "/Aree-tematiche",
-      "method": "GET"
+      "method": "GET",
+      "expectations": [
+        {"type": "regex", "value": "Non mi troverai mai"}
+      ]
     },
     {
       "url": "/var/levico/storage/images/10032-368-ita-IT/Comune-di-Levico-Terme_header_logo.png",

@@ -1,8 +1,14 @@
 const request = (require('request-promise-native')).defaults({jar: true, time: true, resolveWithFullResponse: true})
-const sc = require('./scenarios/scenario_1')
 const buildUrlFromScenario = require('./util').buildUrlFromScenario
 const pino = require('pino')()
 const fs = require('fs')
+const fileToProcess = process.argv[2]
+
+if(!fileToProcess) {
+  pino.error('You must specify a file to process')
+}
+//const sc = require('./scenarios/scenario_1')
+const sc = require(fileToProcess)
 
 const responses = {}
 

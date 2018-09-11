@@ -4,5 +4,5 @@ COPY . /app/
 WORKDIR /app
 
 RUN npm install --only=production
-CMD [ "npm", "start" ]
+CMD [ "npm", "start", "/app/scenarios/scenario_1" ]
 

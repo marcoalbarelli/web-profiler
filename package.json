@@ -1,25 +1,33 @@
 {
   "name": "web-profiler",
-  "version": "0.0.1-alpha",
+  "version": "0.0.1",
   "description": "A very detailed profiler and e2e regression testing tool for web apps",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node standalone.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "profiling",
     "web",
     "e2e",
+    "ezPublish",
+    "contentModel",
+    "ez form automated post",
     "regression"
   ],
   "author": "Marco Albarelli <info@adhocmobile.it>",
   "license": "ISC",
+  "engines": {
+    "node": ">=9.0"
+  },
   "dependencies": {
     "pino": "^5.4.0",
     "pino-pretty": "^2.0.1",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.5"
+    "request-promise-native": "^1.0.5",
+    "xmldom": "^0.1.27",
+    "xpath": "0.0.27"
   },
   "repository": {
     "type": "git",

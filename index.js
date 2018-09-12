@@ -1,62 +1,110 @@
-const request = (require('request-promise-native')).defaults({jar: true, time: true, resolveWithFullResponse: true})
+const options = {jar: true, time: true, resolveWithFullResponse: true}
+const request = (require('request-promise-native')).defaults(options)
 const buildUrlFromScenario = require('./util').buildUrlFromScenario
 const pino = require('pino')()
 const fs = require('fs')
+const xpath = require('xpath')
+const dom = require('xmldom').DOMParser
 const fileToProcess = process.argv[2]
 
-if(!fileToProcess) {
-  pino.error('You must specify a file to process')
+if (!fileToProcess) {
+  throw new Error('You must specify a file to process')
 }
-//const sc = require('./scenarios/scenario_1')
 const sc = require(fileToProcess)
 
 const responses = {}
 
 function* generateScenarioRequest(sc) {
   const defaults = sc.defaults
+  let feedback
   for (let scenario of sc.scenarios) {
-    const url = buildUrlFromScenario(scenario, defaults)
-    const method = scenario.method || defaults.method
-    const form = scenario.form || null
-    yield [request({
-      url,
-      method,
-      form
-    }), scenario]
+    let requestArgs = {}
+    if (feedback) {
+      requestArgs = {
+        url: buildUrlFromScenario(feedback, defaults),
+        method: feedback.method || defaults.method,
+        followRedirects: feedback.followRedirects || false
+      }
+      requestArgs.form = feedback.form
+
+    } else {
+      requestArgs = {
+        url: buildUrlFromScenario(scenario, defaults),
+        form: scenario.form || null,
+        method: scenario.method || defaults.method,
+        followRedirects: scenario.follow || false
+      }
+    }
+
+    feedback = yield [request(requestArgs), scenario]
   }
 }
 
-async function main() {
-  let response, scenario
-  for ([response, scenario] of generateScenarioRequest(sc)) {
-    try {
-      await response
-      if (scenario.expectations) {
-        response.expectations = scenario.expectations
-        for (let i = 0; i < scenario.expectations.length; i++) {
-          switch (scenario.expectations[i].type) {
-            case 'regex':
-              response.expectations[i].result = new RegExp(scenario.expectations[i].value).exec(response.response.body)
-              break
-            case 'favicon':
-              const remoteFavicon = (await request({
-                encoding: null,
-                time: true,
-                resolveWithFullResponse: true,
-                url: response.href
-              })).body
-              const equals = remoteFavicon.equals(fs.readFileSync('./assets/' + scenario.expectations[i].filename))
-              response.expectations[i].result = equals
-              break
-          }
-        }
-      }
-    } catch (e) {
-      responses[response.href] = {error: e.message}
+function prepareDomInputsForProgrammaticPOST(inputs, scenario) {
+  return inputs.reduce((acc, n) => {
+    const id = n.attributes.getNamedItem('id') ? n.attributes.getNamedItem('id').value : undefined
+    const name = n.attributes.getNamedItem('name') ? n.attributes.getNamedItem('name').value : null
+    const type = n.attributes.getNamedItem('type') ? n.attributes.getNamedItem('type').value : null
+    if (type === 'submit' && name !== scenario.submitButtonName) {
+      return acc
     }
-    fillResponses(response)
+
+    let value
+
+    if (id && scenario.form[id]) {
+      value = scenario.form[id]
+    } else {
+      value = n.attributes.getNamedItem('value') ? n.attributes.getNamedItem('value').value : null
+    }
+    if (name && value !== null) {
+      acc[name] = value
+    }
+    return acc
+  }, {})
+}
+
+function retrieveFeedbackActionForEz(response, scenario) {
+  const doc = new dom({
+    errorHandler: (arg) => {
+      //silence is golden. Plus we're not linting other people's ~code~ HTML
+    }
+  }).parseFromString(response.response.body)
+  const editForm = xpath.select("//form[@class='edit']", doc)[0]
+  const action = editForm.attributes.getNamedItem('action').value
+
+  /**
+   * We're ignoring selects and textareas for the time being
+   */
+  const inputs = xpath.select("//form[@class='edit']/descendant::input", doc)
+  const mapped = prepareDomInputsForProgrammaticPOST(inputs, scenario)
+  return {
+    form: mapped,
+    url: action,
+    method: 'POST',
+    followRedirects: true
   }
-  pino.info(responses)
+}
+
+async function evaluateExpectations(response, scenario) {
+  response.expectations = scenario.expectations
+  for (let i = 0; i < scenario.expectations.length; i++) {
+    switch (scenario.expectations[i].type) {
+      case 'code':
+        response.expectations[i].result = scenario.expectations[i].value === response.response.statusCode
+        break
+      case 'regex':
+        response.expectations[i].result = new RegExp(scenario.expectations[i].value).exec(response.response.body)
+        break
+      case 'favicon':
+        response.expectations[i].result = (await request({
+          encoding: null, //otherwise it gets a base64 encoding which screws things up
+          time: true,
+          resolveWithFullResponse: true,
+          url: response.href
+        })).body.equals(fs.readFileSync('./assets/' + scenario.expectations[i].filename))
+        break
+    }
+  }
 }
 
 function fillResponses(response) {
@@ -72,4 +120,33 @@ function fillResponses(response) {
   }
 }
 
-main()
+module.exports = async function main() {
+  let response, scenario, feedback
+  let done = false
+  let iteration
+  const generator = generateScenarioRequest(sc)
+  while (!done) {
+    iteration = generator.next(feedback)
+    feedback = undefined
+    done = iteration.done
+    if (!done) {
+      response = iteration.value[0] || null
+      scenario = iteration.value[1] || null
+
+      try {
+        await response
+        if (scenario.expectations) {
+          await evaluateExpectations(response, scenario);
+        }
+
+        if (scenario.nextStepIsEzEdit) {
+          feedback = retrieveFeedbackActionForEz(response, scenario)
+        }
+      } catch (e) {
+        responses[response.href] = {error: e.message}
+      }
+      fillResponses(response)
+    }
+  }
+  pino.info(responses)
+}

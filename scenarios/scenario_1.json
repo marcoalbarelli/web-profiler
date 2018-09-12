@@ -75,6 +75,36 @@
     {
       "url": "/var/levico/storage/images/10032-368-ita-IT/Comune-di-Levico-Terme_header_logo.png",
       "method": "GET"
+    },
+    {
+      "url": "/editorialstuff/add/eventi",
+      "method": "GET",
+      "follow": true,
+      "nextStepIsEzEdit": true,
+      "expectations": [
+        {
+          "type": "code",
+          "value": 200
+        }
+      ],
+      "multipart": false,
+      "submitButtonName": "PublishButton",
+      "form": {
+        "ezcoa-485_titolo": "Blue Monday",
+        "ezcoa-272_short_title": "I thought I was mistaken, I thought I heard your words"
+      }
+    },
+    {
+      "url": "form action to be filled dinamically (put what you want, will be overwritten)",
+      "method": "POST",
+      "follow": true,
+      "isEzEdit": true,
+      "expectations": [
+        {
+          "type": "code",
+          "value": 200
+        }
+      ]
     }
   ]
 }

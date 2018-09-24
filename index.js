@@ -1,16 +1,9 @@
 const options = {jar: true, time: true, resolveWithFullResponse: true}
 const request = (require('request-promise-native')).defaults(options)
 const buildUrlFromScenario = require('./util').buildUrlFromScenario
-const pino = require('pino')()
 const fs = require('fs')
 const xpath = require('xpath')
 const dom = require('xmldom').DOMParser
-const fileToProcess = process.argv[2]
-
-if (!fileToProcess) {
-  throw new Error('You must specify a file to process')
-}
-const sc = require(fileToProcess)
 
 const responses = {}
 
@@ -120,7 +113,10 @@ function fillResponses(response) {
   }
 }
 
-module.exports = async function main() {
+module.exports = async function main(sc = null) {
+  if(!sc) {
+    throw new Error('You must specify a scenario to process')
+  }
   let response, scenario, feedback
   let done = false
   let iteration
@@ -136,7 +132,7 @@ module.exports = async function main() {
       try {
         await response
         if (scenario.expectations) {
-          await evaluateExpectations(response, scenario);
+          await evaluateExpectations(response, scenario)
         }
 
         if (scenario.nextStepIsEzEdit) {
@@ -148,5 +144,5 @@ module.exports = async function main() {
       fillResponses(response)
     }
   }
-  pino.info(responses)
+  return responses
 }

@@ -1,0 +1,83 @@
+{
+  "checks": {},
+  "defaults": {
+    "schema": "http",
+    "username": "pippo",
+    "password": "password",
+    "server": "localhost"
+  },
+  "scenarios": [
+    {
+      "name": "",
+      "schema": "https",
+      "server": "google.it",
+      "url": "/",
+      "method": "GET"
+    },
+    {
+      "name": "",
+      "schema": "http",
+      "server": "localhost",
+      "url": "/",
+      "method": "POST",
+      "form": {
+        "a": 1,
+        "b" : "c"
+      }
+    },
+    {
+      "name": "",
+      "schema": "http",
+      "url": "/",
+      "query": {"a": "b"},
+      "method": "GET",
+      "expectations": [
+        {"type": "regex", "value": "Legambiente"}
+      ]
+    },
+    {
+      "url": "/favicon.ico",
+      "method": "GET",
+      "expectations": [
+        {"type": "favicon", "filename": "default_favicon.ico", "value": false}
+      ]
+    },
+    {
+      "url": "/some_url",
+      "method": "GET",
+      "expectations": [
+        {"type": "regex", "value": "Non mi troverai mai"}
+      ]
+    },
+    {
+      "url": "/ez_form",
+      "method": "GET",
+      "follow": true,
+      "nextStepIsEzEdit": true,
+      "expectations": [
+        {
+          "type": "code",
+          "value": 200
+        }
+      ],
+      "multipart": false,
+      "submitButtonName": "PublishButton",
+      "form": {
+        "ezcoa-485_titolo": "Blue Monday",
+        "ezcoa-272_short_title": "I thought I was mistaken, I thought I heard your words"
+      }
+    },
+    {
+      "url": "form action to be filled dinamically (put what you want, will be overwritten)",
+      "method": "POST",
+      "follow": true,
+      "isEzEdit": true,
+      "expectations": [
+        {
+          "type": "code",
+          "value": 200
+        }
+      ]
+    }
+  ]
+}

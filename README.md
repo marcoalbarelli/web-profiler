@@ -1,5 +1,7 @@
 # Web Profiler
 
+[![Build Status](https://travis-ci.org/marcoalbarelli/web-profiler.svg?branch=master)](https://travis-ci.org/marcoalbarelli/web-profiler)
+
 This project has three main goals:
 * profiling the speed of single pages along a prefixed flow, with very detailed timings that will allow to spot infrastructure problems.
 Pretty much tries to answer to users saying "It's slow"

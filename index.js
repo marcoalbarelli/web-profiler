@@ -5,8 +5,6 @@ const fs = require('fs')
 const xpath = require('xpath')
 const dom = require('xmldom').DOMParser
 
-const responses = {}
-
 function* generateScenarioRequest(sc) {
   const defaults = sc.defaults
   let feedback
@@ -101,7 +99,7 @@ async function evaluateExpectations(response, scenario) {
   }
 }
 
-function fillResponses(response) {
+function fillResponses(responses, response) {
   responses[response.href] = {
     ...responses[response.href],
     finalHref: response.href,
@@ -117,6 +115,7 @@ function fillResponses(response) {
 }
 
 module.exports = async function main(sc = null) {
+  const responses = {}
   if(!sc) {
     throw new Error('You must specify a scenario to process')
   }
@@ -149,9 +148,10 @@ module.exports = async function main(sc = null) {
         }
         responses[response.href] = {error: e.message}
       }
-      fillResponses(response)
+      fillResponses(responses, response)
     }
   }
   return responses
 }
+
 

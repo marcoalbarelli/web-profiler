@@ -80,6 +80,7 @@ function retrieveFeedbackActionForEz(response, scenario) {
 
 async function evaluateExpectations(response, scenario) {
   response.expectations = scenario.expectations
+
   for (let i = 0; i < scenario.expectations.length; i++) {
     switch (scenario.expectations[i].type) {
       case 'code':
@@ -94,7 +95,7 @@ async function evaluateExpectations(response, scenario) {
           time: true,
           resolveWithFullResponse: true,
           url: response.href
-        })).body.equals(fs.readFileSync('./assets/' + scenario.expectations[i].filename))
+        })).body.equals(fs.readFileSync(scenario.expectations[i].filename))
         break
     }
   }
@@ -103,6 +104,8 @@ async function evaluateExpectations(response, scenario) {
 function fillResponses(response) {
   responses[response.href] = {
     ...responses[response.href],
+    finalHref: response.href,
+    name: response.name,
     code: response.response ? response.response.statusCode : null,
     method: response.method,
     timings: response.timings,
@@ -128,9 +131,10 @@ module.exports = async function main(sc = null) {
     if (!done) {
       response = iteration.value[0] || null
       scenario = iteration.value[1] || null
-
+      response.name = scenario.name
       try {
         await response
+
         if (scenario.expectations) {
           await evaluateExpectations(response, scenario)
         }
@@ -139,6 +143,10 @@ module.exports = async function main(sc = null) {
           feedback = retrieveFeedbackActionForEz(response, scenario)
         }
       } catch (e) {
+
+        if (scenario.expectations) {
+          await evaluateExpectations(response, scenario)
+        }
         responses[response.href] = {error: e.message}
       }
       fillResponses(response)
@@ -146,3 +154,4 @@ module.exports = async function main(sc = null) {
   }
   return responses
 }
+

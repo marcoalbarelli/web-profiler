@@ -18,6 +18,15 @@ describe('web-profiler', () => {
   })
   it('returns json with timings if given a valid scenario', async () => {
     const scenario = require('./scenario_1')
+    scenario.scenarios.map((s) => {
+      if(s.expectations) {
+        s.expectations.map((e) => {
+          if(e.type==='favicon') {
+            e.filename = __dirname+'/../assets/'+e.filename
+          }
+        })
+      }
+    })
     const output = await wp(scenario)
     expect(output).to.be.instanceOf(Object)
     Object.keys(output).map((r) => {

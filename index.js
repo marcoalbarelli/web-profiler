@@ -82,7 +82,7 @@ async function evaluateExpectations(response, scenario) {
   for (let i = 0; i < scenario.expectations.length; i++) {
     switch (scenario.expectations[i].type) {
       case 'code':
-        response.expectations[i].result = scenario.expectations[i].value === response.response.statusCode
+        response.expectations[i].result = scenario.expectations[i].value === response.response ? response.response.statusCode : 0
         break
       case 'regex':
         response.expectations[i].result = new RegExp(scenario.expectations[i].value).exec(response.response.body)
@@ -93,7 +93,7 @@ async function evaluateExpectations(response, scenario) {
           time: true,
           resolveWithFullResponse: true,
           url: response.href
-        })).body.equals(fs.readFileSync(scenario.expectations[i].filename))
+        }).catch((e)=> { return { body: Buffer.from('') } })).body.equals(fs.readFileSync(scenario.expectations[i].filename))
         break
     }
   }
@@ -146,7 +146,6 @@ module.exports = async function main(sc = null) {
         if (scenario.expectations) {
           await evaluateExpectations(response, scenario)
         }
-        responses[response.href] = {error: e.message}
       }
       fillResponses(responses, response)
     }

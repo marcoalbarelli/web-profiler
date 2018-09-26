@@ -85,7 +85,7 @@ async function evaluateExpectations(response, scenario) {
         response.expectations[i].result = scenario.expectations[i].value === response.response ? response.response.statusCode : 0
         break
       case 'regex':
-        response.expectations[i].result = new RegExp(scenario.expectations[i].value).exec(response.response.body)
+        response.expectations[i].result = response.response ? new RegExp(scenario.expectations[i].value).exec(response.response.body) : null
         break
       case 'favicon':
         response.expectations[i].result = (await request({
